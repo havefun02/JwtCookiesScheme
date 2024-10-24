@@ -28,7 +28,10 @@ namespace JwtCookiesScheme
                 return configuration.CreateMapper();
             });
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+
             services.AddScoped<IUserService<User>, UserService>();
+            services.AddScoped<IAuthService<User>, AuthService>();
+
             services.AddScoped<IJwtService<User>, JwtService>();
             services.AddScoped<ITokenService<ResetToken>, TokenService>();
             services.AddAuthentication("JWT-COOKIES-SCHEME").AddScheme<AuthenticationSchemeOptions, AuthenticationScheme>("JWT-COOKIES-SCHEME", null);

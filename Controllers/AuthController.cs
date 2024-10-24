@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using JwtCookiesScheme.Interfaces;
+using Microsoft.AspNetCore.Identity;
+using JwtCookiesScheme.Dtos;
 
 namespace JwtCookiesScheme.Controllers
 {
@@ -11,7 +13,6 @@ namespace JwtCookiesScheme.Controllers
     {
         private readonly IAuthService<User> _authService;
         private readonly IMapper _mapper;
-
         public AuthController(IAuthService<User> authService, IMapper mapper)
         {
             _mapper = mapper;
@@ -34,10 +35,14 @@ namespace JwtCookiesScheme.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
+        public async Task<IActionResult> Login(LoginDto loginDto)
         {
+            if (!ModelState.IsValid)
+                return View(loginDto);
+
             try
             {
+
                 var (access, refresh) = await _authService.Login(loginDto);
                 if (access == null || refresh == null) return NotFound("Please login again!");
                 HttpContext.Response.Cookies.Append("accessToken", access, new CookieOptions
@@ -52,13 +57,7 @@ namespace JwtCookiesScheme.Controllers
                     Secure = true,
                     SameSite = SameSiteMode.Strict,
                 });
-                var returnUrl = Request.Query["returnUrl"].ToString();
-                if (!string.IsNullOrEmpty(returnUrl))
-                {
-                    return Ok(new { RedirectUrl = returnUrl });
-
-                }
-                return Ok(new { RedirectUrl = "/User/Profile" });
+                return RedirectToAction("Profile", "User");
             }
             catch (Exception ex)
             {
@@ -66,27 +65,27 @@ namespace JwtCookiesScheme.Controllers
             }
         }
         [HttpPost]
-        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
+        public async Task<IActionResult> Register(RegisterDto registerDto)
         {
             if (!ModelState.IsValid)
             {
-                return BadRequest("Form data is not correct");
+                return View(registerDto);
             }
             try
             {
                 var registerResult = await _authService.Register(registerDto);
                 if (registerResult)
                 {
-                    return Ok(new { RedirectUrl = "/auth/login" });
+                    return RedirectToAction("Login","Auth");
                 }
                 else
                 {
-                    return BadRequest("Register failed");
+                    return View(registerDto);
                 }
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return View(registerDto);
             }
         }
         [HttpPost("change-password")]
@@ -95,8 +94,8 @@ namespace JwtCookiesScheme.Controllers
             try
             {
                 var changePasswordResult = await _authService.ChangePassword(changePasswordDto);
-                if (changePasswordResult) return Ok(new { redirectUrl = "/auth/login" });
-                else return BadRequest();
+                if (changePasswordResult) return RedirectToAction("Login","Auth");
+                else return View(changePasswordDto);
             }
             catch (Exception ex)
             {

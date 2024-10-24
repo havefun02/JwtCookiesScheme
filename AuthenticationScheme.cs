@@ -32,13 +32,14 @@ namespace JwtCookiesScheme
             var endpoint = context.GetEndpoint();
             if (endpoint == null) return false;
 
-            var controllerActionDescriptor = endpoint.Metadata
-                .GetMetadata<ControllerActionDescriptor>();
+            var controllerDescriptor = endpoint.Metadata
+                .GetMetadata<ControllerActionDescriptor>()
+                ?.ControllerTypeInfo;
 
-            var result = controllerActionDescriptor?.MethodInfo
+            var hasAuthorizeOnController = controllerDescriptor?
                 .GetCustomAttributes(typeof(AuthorizeAttribute), true)
                 .Any() ?? false;
-            return result;
+            return hasAuthorizeOnController;
         }
         private async Task<AuthenticateResult> HandleExpiredTokenAsync()
         {
@@ -88,11 +89,7 @@ namespace JwtCookiesScheme
         }
         protected override Task HandleChallengeAsync(AuthenticationProperties properties)
         {
-            var returnUrl = Context.Request.Path + Context.Request.QueryString;
-            if (returnUrl != null)
-            {
-                Context.Response.Redirect($"/account/login?returnUrl={returnUrl}");
-            }
+            Context.Response.Redirect($"/auth/login");
             return Task.CompletedTask;
         }
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)

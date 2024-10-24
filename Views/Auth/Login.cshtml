@@ -5,6 +5,8 @@
 }
 <div class="container m-3">
     <form method="post" asp-action="Login" asp-controller="Auth" >
+        @Html.AntiForgeryToken() <!-- Anti-Forgery Token -->
+
         <div class="form-group">
             <label asp-for="UserEmail">Email</label>
             <input asp-for="UserEmail" class="form-control" />

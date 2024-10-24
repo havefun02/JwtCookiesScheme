@@ -6,7 +6,6 @@ using JwtCookiesScheme.Mapper;
 using JwtCookiesScheme.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.OpenApi.Models;
-using System;
 
 namespace JwtCookiesScheme
 {
@@ -19,6 +18,7 @@ namespace JwtCookiesScheme
         }
         public void ConfigureServices(IServiceCollection services) {
             services.AddDbContext<DatabaseContext>();
+
             services.AddSingleton<IMapper>(provider =>
             {
                 var configuration = new MapperConfiguration(cfg =>

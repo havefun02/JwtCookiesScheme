@@ -35,6 +35,7 @@ namespace JwtCookiesScheme.Controllers
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public async Task<IActionResult> Login(LoginDto loginDto)
         {
             if (!ModelState.IsValid)
@@ -65,6 +66,8 @@ namespace JwtCookiesScheme.Controllers
             }
         }
         [HttpPost]
+        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> Register(RegisterDto registerDto)
         {
             if (!ModelState.IsValid)
@@ -89,6 +92,8 @@ namespace JwtCookiesScheme.Controllers
             }
         }
         [HttpPost("change-password")]
+        [ValidateAntiForgeryToken]
+
         public async Task<IActionResult> ChangePassword([FromBody] ChangePasswordDto changePasswordDto)
         {
             try

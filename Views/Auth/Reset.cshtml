@@ -6,6 +6,8 @@
 <div class="container m-3">
     <h2>Change Password</h2>
     <form method="post" asp-action="Reset" asp-controller="Auth">
+        @Html.AntiForgeryToken() <!-- Anti-Forgery Token -->
+
         <div class="form-group">
             <label asp-for="UserEmail"></label>
             <input asp-for="UserEmail" type="email" class="form-control" />

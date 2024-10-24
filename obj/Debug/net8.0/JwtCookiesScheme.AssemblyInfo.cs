@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("JwtCookiesScheme")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+310ac4e3155a2af88f3867ee348f50becb53c966")]
 [assembly: System.Reflection.AssemblyProductAttribute("JwtCookiesScheme")]
 [assembly: System.Reflection.AssemblyTitleAttribute("JwtCookiesScheme")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

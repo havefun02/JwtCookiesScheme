@@ -1,0 +1,25 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\LAP PHAN\\source\\repos\\JwtCookiesScheme\\JwtCookiesScheme\\wwwroot\\notFoundPage.html",
+      "PackagePath": "staticwebassets\\notFoundPage.html"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.JwtCookiesScheme.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.JwtCookiesScheme.props",
+      "PackagePath": "build\\JwtCookiesScheme.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.JwtCookiesScheme.props",
+      "PackagePath": "buildMultiTargeting\\JwtCookiesScheme.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.JwtCookiesScheme.props",
+      "PackagePath": "buildTransitive\\JwtCookiesScheme.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

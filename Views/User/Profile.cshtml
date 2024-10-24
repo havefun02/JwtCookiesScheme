@@ -1,0 +1,21 @@
+﻿@model JwtCookiesScheme.ViewModels.UserViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container">
+    <h1>User Information</h1>
+    <div>
+        <h3>User Details</h3>
+        <p><strong>Username:</strong> @Model.UserName</p>
+        <p><strong>Email:</strong> @Model.UserEmail</p>
+        <p><strong>Role:</strong> @Model.UserRole</p>
+        <h4>Permissions:</h4>
+        <ul>
+            @foreach (var permission in Model.UserPermissions)
+            {
+                <li>@permission</li>
+            }
+        </ul>
+    </div>
+</div>

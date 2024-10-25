@@ -80,7 +80,7 @@ namespace JwtCookiesScheme
             }
             catch (ArgumentException ex)
             {
-                return AuthenticateResult.Fail("User not found with error " + ex.Message);
+                return AuthenticateResult.Fail(ex.Message);
             }
             catch (Exception ex)
             {
@@ -99,7 +99,9 @@ namespace JwtCookiesScheme
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
-            if (NeedAuthorize(Context))
+            var isLoginEndpoint = Context.Request.Path.StartsWithSegments("/auth/login");
+            
+            if (NeedAuthorize(Context) || isLoginEndpoint)
             {
                 var token = Context.Request.Cookies["accessToken"];
                 if (string.IsNullOrEmpty(token))
@@ -110,11 +112,23 @@ namespace JwtCookiesScheme
                 {
                     var principal = _jwtService.ValidateAccessToken(token);
                     var ticket = new AuthenticationTicket(principal, "JWT-COOKIES-SCHEME");
+                    if (isLoginEndpoint)
+                    {
+                        Context.Response.Redirect("/User/Profile");
+                    }
                     return AuthenticateResult.Success(ticket);
                 }
                 catch (SecurityTokenExpiredException)
                 {
-                    return await HandleExpiredTokenAsync();
+                    var verifyExpired=await HandleExpiredTokenAsync();
+                    if (verifyExpired.Succeeded) {
+                        if (isLoginEndpoint)
+                        {
+                            Context.Response.Redirect("/User/Profile");
+                        }
+                        return verifyExpired;
+                    }
+                    return verifyExpired;
 
                 }
                 catch (Exception ex)
@@ -122,6 +136,7 @@ namespace JwtCookiesScheme
                     return AuthenticateResult.Fail($"Authentication failed: {ex.Message}");
                 }
             }
+
             else
             {
                 return AuthenticateResult.NoResult();

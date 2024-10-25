@@ -18,7 +18,7 @@ namespace JwtCookiesScheme.Controllers
             _mapper = mapper;
             _authService = authService;
         }
-        [HttpGet] 
+        [HttpGet]
         public IActionResult Login() 
         {
             return View();
@@ -53,6 +53,12 @@ namespace JwtCookiesScheme.Controllers
                     SameSite = SameSiteMode.Strict,
                 });
                 HttpContext.Response.Cookies.Append("refreshToken", refresh, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                });
+                HttpContext.Response.Cookies.Append("isLogged", "true", new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,

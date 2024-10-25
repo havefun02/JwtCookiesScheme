@@ -2,6 +2,7 @@
 using JwtCookiesScheme.Entities;
 using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Services;
+using JwtCookiesScheme.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -20,7 +21,7 @@ namespace JwtCookiesScheme.Controllers
             _mapper = mapper;
         }
         [HttpGet]
-        public IActionResult Profile()
+        public async Task<IActionResult> Profile()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             var userId = userIdClaim?.Value;
@@ -29,12 +30,13 @@ namespace JwtCookiesScheme.Controllers
                 return BadRequest("User ID cannot be null or empty.");
             }
             ViewData["Title"] = "Profile";
-            var userData = _userService.GetProfile(userId);
-            var userView = _mapper.Map<User>(userData);
-            return View(userData);
+            var userData =await _userService.GetProfile(userId);
+            var userView = _mapper.Map<UserViewModel>(userData);
+
+            return View(userView);
         }
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
             var userId = userIdClaim?.Value;
@@ -43,14 +45,13 @@ namespace JwtCookiesScheme.Controllers
                 return BadRequest("User ID cannot be null or empty.");
             }
             ViewData["Title"] = "Index";
-            var userData = _userService.GetAllUser();
-            var userView = _mapper.Map<List<User>>(userData);
+            var userData =await _userService.GetAllUser();
+            var userView = _mapper.Map<List<UserViewModel>>(userData);
 
             return View(userView);
         }
         [Authorize]
-        [HttpPost("logout")]
-        public async Task<IActionResult> Logout()
+        public IActionResult Logout()
         {
             try
             {
@@ -60,9 +61,10 @@ namespace JwtCookiesScheme.Controllers
                 {
                     return NotFound("User ID not found in claims.");
                 }
-               HttpContext.Response.Cookies.Delete("accessToken");
+                HttpContext.Response.Cookies.Delete("accessToken");
+                HttpContext.Response.Cookies.Delete("isLogged");
                 HttpContext.Response.Cookies.Delete("refreshToken");
-                return Ok(new { redirectUrl = "/auth/login" });
+                return RedirectToAction("Login","Auth");
             }
             catch (Exception ex)
             {

@@ -28,7 +28,6 @@ namespace JwtCookiesScheme
                 return configuration.CreateMapper();
             });
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
-
             services.AddScoped<IUserService<User>, UserService>();
             services.AddScoped<IAuthService<User>, AuthService>();
 

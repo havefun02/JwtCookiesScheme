@@ -5,6 +5,8 @@ using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Mapper;
 using JwtCookiesScheme.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
 
 namespace JwtCookiesScheme
@@ -18,7 +20,6 @@ namespace JwtCookiesScheme
         }
         public void ConfigureServices(IServiceCollection services) {
             services.AddDbContext<DatabaseContext>();
-
             services.AddSingleton<IMapper>(provider =>
             {
                 var configuration = new MapperConfiguration(cfg =>
@@ -28,9 +29,9 @@ namespace JwtCookiesScheme
                 return configuration.CreateMapper();
             });
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+            services.AddScoped<ILockoutService, LockoutService>();
             services.AddScoped<IUserService<User>, UserService>();
             services.AddScoped<IAuthService<User>, AuthService>();
-
             services.AddScoped<IJwtService<User>, JwtService>();
             services.AddScoped<ITokenService<ResetToken>, TokenService>();
             services.AddAuthentication("JWT-COOKIES-SCHEME").AddScheme<AuthenticationSchemeOptions, AuthenticationScheme>("JWT-COOKIES-SCHEME", null);
@@ -44,7 +45,7 @@ namespace JwtCookiesScheme
 
             services.AddMvc();
         }
-        public void Configure(IApplicationBuilder app,IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app,IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
             if (env.IsDevelopment())
             {
@@ -62,6 +63,9 @@ namespace JwtCookiesScheme
             app.UseCors("AllowAll");
             app.UseDefaultFiles();
             app.UseStaticFiles();
+
+            app.UseMiddleware<LockoutMiddleware>(serviceProvider);
+
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

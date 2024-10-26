@@ -6,6 +6,5 @@
         public required string UserRoleId { get; set; }
         public required string UserName { get; set; }
 
-
     }
 }

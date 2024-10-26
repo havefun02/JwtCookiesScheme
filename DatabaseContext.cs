@@ -11,12 +11,41 @@ namespace JwtCookiesScheme
         public DatabaseContext(DbContextOptions<DatabaseContext> options) : base(options) { }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
+        public DbSet<Lockout> Lockouts { get; set; }
+
         public DbSet<Permission> Permissions {  get; set; }
         public DbSet<RolePermissions> RolePermissions { get; set; }
         public DbSet<ResetToken> ResetTokens { get; set; }
+        public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            AddTimestamps();
+            return await base.SaveChangesAsync();
+        }
+        private void AddTimestamps()
+        {
+            var entries = ChangeTracker.Entries<TimeBase>();
+
+            foreach (var entry in entries)
+            {
+                if (entry.State == EntityState.Added)
+                {
+                    entry.Entity.CreatedAt = DateTime.UtcNow;
+                    entry.Entity.LastModifiedAt = DateTime.UtcNow;
+                }
+                else if (entry.State == EntityState.Modified)
+                {
+                    entry.Entity.LastModifiedAt = DateTime.UtcNow;
+                }
+            }
+        }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+            modelBuilder.Entity<Lockout>(entity =>
+            {
+                entity.HasKey(x => x.Id);
+                entity.HasIndex(x => x.SsId).IsUnique();
+            });
             modelBuilder.Entity<User>(entity =>
             {
                 entity.HasKey(u => u.UserId);

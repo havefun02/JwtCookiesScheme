@@ -34,8 +34,9 @@ namespace JwtCookiesScheme.Services
                 throw new ArgumentException("Invalid email or password.");
             }
 
+
             var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.UserPassword!, dto.UserPassword);
+            var result = passwordHasher.VerifyHashedPassword(user, user.UserPassword!, dto.UserPassword!);
 
             if (result == PasswordVerificationResult.Failed)
             {

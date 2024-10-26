@@ -45,7 +45,10 @@ namespace JwtCookiesScheme.Controllers
             {
 
                 var (access, refresh) = await _authService.Login(loginDto);
-                if (access == null || refresh == null) return NotFound("Please login again!");
+                if (access == null || refresh == null)
+                {
+                    return View(loginDto);
+                }
                 HttpContext.Response.Cookies.Append("accessToken", access, new CookieOptions
                 {
                     HttpOnly = true,
@@ -68,7 +71,7 @@ namespace JwtCookiesScheme.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest(ex.Message);
+                return View(loginDto);
             }
         }
         [HttpPost]
@@ -92,7 +95,7 @@ namespace JwtCookiesScheme.Controllers
                     return View(registerDto);
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return View(registerDto);
             }

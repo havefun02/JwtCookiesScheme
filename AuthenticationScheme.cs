@@ -106,6 +106,7 @@ namespace JwtCookiesScheme
                 var token = Context.Request.Cookies["accessToken"];
                 if (string.IsNullOrEmpty(token))
                 {
+                    Context.Response.Cookies.Delete("isLogged");
                     return AuthenticateResult.Fail("No token provided");
                 }
                 try
@@ -116,6 +117,12 @@ namespace JwtCookiesScheme
                     {
                         Context.Response.Redirect("/User/Profile");
                     }
+                    Context.Response.Cookies.Append("isLogged", "Yes", new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.Strict,
+                    });
                     return AuthenticateResult.Success(ticket);
                 }
                 catch (SecurityTokenExpiredException)
@@ -126,19 +133,28 @@ namespace JwtCookiesScheme
                         {
                             Context.Response.Redirect("/User/Profile");
                         }
+                        Context.Response.Cookies.Append("isLogged", "Yes", new CookieOptions
+                        {
+                            HttpOnly = true,
+                            Secure = true,
+                            SameSite = SameSiteMode.Strict,
+                        });
                         return verifyExpired;
                     }
+                    Context.Response.Cookies.Delete("isLogged");
                     return verifyExpired;
 
                 }
                 catch (Exception ex)
                 {
+                    Context.Response.Cookies.Delete("isLogged");
                     return AuthenticateResult.Fail($"Authentication failed: {ex.Message}");
                 }
             }
 
             else
             {
+                Context.Response.Cookies.Delete("isLogged");
                 return AuthenticateResult.NoResult();
             }
         }

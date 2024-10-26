@@ -58,7 +58,7 @@ namespace JwtCookiesScheme.Controllers
                     Secure = true,
                     SameSite = SameSiteMode.Strict,
                 });
-                HttpContext.Response.Cookies.Append("isLogged", "true", new CookieOptions
+                HttpContext.Response.Cookies.Append("isLogged", "Yes", new CookieOptions
                 {
                     HttpOnly = true,
                     Secure = true,

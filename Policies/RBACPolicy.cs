@@ -1,0 +1,72 @@
+﻿using JwtCookiesScheme.Entities;
+using JwtCookiesScheme.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
+using System.Security.Claims;
+
+namespace JwtCookiesScheme.Policies
+{
+
+    public abstract class RoleRequirementBase: IAuthorizationRequirement
+    {
+        protected readonly RolePermissionsCacheService _service;
+        
+        public RoleRequirementBase(RolePermissionsCacheService service) {
+            _service = service;
+        }
+        public abstract Task<bool> IsAuthorized(string roleId);
+    }
+    public class OwnerOnlyRequirement : RoleRequirementBase
+    {
+        public OwnerOnlyRequirement(RolePermissionsCacheService service):base(service)
+        {
+        }
+        public override async Task<bool> IsAuthorized(string roleId)
+        {
+            var roles=await this._service.GetRolesAsync();
+            if (roles != null && roles.Contains(roleId) && roleId=="Owner") {
+                return true;
+            }
+            return false;
+        }
+    }
+    public class AdminOnlyRequirement : RoleRequirementBase
+    {
+        public AdminOnlyRequirement(RolePermissionsCacheService service) : base(service)
+        {
+        }
+        public override async Task<bool> IsAuthorized(string roleId)
+        {
+
+            var roles = await this._service.GetRolesAsync();
+            if (roles != null && roles.Contains(roleId) && roleId == "Admin")
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+    public class RoleAuthorizationHandler<TRequirement>: AuthorizationHandler<TRequirement>
+        where TRequirement:RoleRequirementBase
+    {
+        protected override async Task HandleRequirementAsync(AuthorizationHandlerContext context, TRequirement requirement)
+        {
+            var roleClaim = context.User.FindFirst(ClaimTypes.Role);
+            var userRole = roleClaim?.Value;
+
+            if (string.IsNullOrEmpty(userRole)) {
+                context.Fail();
+                return; 
+            }
+
+            var result = await requirement.IsAuthorized(userRole);
+
+            if (result)
+            {
+                context.Succeed(requirement);
+                return;
+            }
+            context.Fail();
+        }
+    }
+}

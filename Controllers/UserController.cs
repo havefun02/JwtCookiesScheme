@@ -9,7 +9,6 @@ using System.Security.Claims;
 
 namespace JwtCookiesScheme.Controllers
 {
-    [Authorize]
     public class UserController : Controller
     {
         private readonly IUserService<User> _userService;
@@ -20,6 +19,7 @@ namespace JwtCookiesScheme.Controllers
             _userService = userService;
             _mapper = mapper;
         }
+        [Authorize(Policy ="AdminOnly")]
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -35,6 +35,9 @@ namespace JwtCookiesScheme.Controllers
 
             return View(userView);
         }
+
+        [Authorize(Policy = "AdminOnly")]
+
         [HttpGet]
         public async Task<IActionResult> Index()
         {

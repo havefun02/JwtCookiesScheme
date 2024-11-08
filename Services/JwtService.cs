@@ -42,7 +42,6 @@ namespace JwtCookiesScheme.Services
                 new Claim(ClaimTypes.NameIdentifier, user.UserId),
                 new Claim(ClaimTypes.Role, user.UserRoleId),
                 new Claim(ClaimTypes.Name, user.UserName)
-
             };
             var tokenDescriptor = new SecurityTokenDescriptor
             {

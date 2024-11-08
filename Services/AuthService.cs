@@ -7,6 +7,7 @@ using JwtCookiesScheme.Dtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using Microsoft.AspNetCore.DataProtection;
 
 namespace JwtCookiesScheme.Services
 {
@@ -16,7 +17,7 @@ namespace JwtCookiesScheme.Services
         private readonly IRepository<Role, DatabaseContext> _roleRepository;
         private readonly IJwtService<User> _jwtService;
 
-        public AuthService(IRepository<User, DatabaseContext> userRepository, IRepository<Role, DatabaseContext> roleRepository, IJwtService<User> jwtService)
+        public AuthService( IRepository<User, DatabaseContext> userRepository, IRepository<Role, DatabaseContext> roleRepository, IJwtService<User> jwtService)
         {
             _roleRepository = roleRepository;
             _userRepository = userRepository;

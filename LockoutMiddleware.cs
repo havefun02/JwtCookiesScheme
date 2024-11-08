@@ -23,7 +23,6 @@ namespace JwtCookiesScheme
 
                 if (context.Request.Path.HasValue && context.Request.Path.Value.Equals("/auth/login", StringComparison.OrdinalIgnoreCase) && context.Request.Method == HttpMethods.Post)
                 {
-                    Console.WriteLine("Lockout check");
                     var sessionId = context.Request.Cookies["ssid"];
                     if (string.IsNullOrEmpty(sessionId))
                     {
@@ -43,7 +42,7 @@ namespace JwtCookiesScheme
                         context.Response.Body = responseBody;
                         await _next(context);
                         var isLoggedIn = context.Request.Cookies.ContainsKey("isLogged") &&
-                 context.Request.Cookies["isLoggedIn"]!.Equals("Yes", StringComparison.OrdinalIgnoreCase);
+                 context.Request.Cookies["isLogged"]!.Equals("Yes", StringComparison.OrdinalIgnoreCase);
 
 
                         if (!isLoggedIn)

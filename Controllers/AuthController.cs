@@ -6,17 +6,22 @@ using System.Security.Claims;
 using JwtCookiesScheme.Interfaces;
 using Microsoft.AspNetCore.Identity;
 using JwtCookiesScheme.Dtos;
+using JwtCookiesScheme.Services;
 
 namespace JwtCookiesScheme.Controllers
 {
     public class AuthController : Controller
     {
         private readonly IAuthService<User> _authService;
-        private readonly IMapper _mapper;
-        public AuthController(IAuthService<User> authService, IMapper mapper)
+        private readonly IMapper _mapper; 
+        private readonly IEncryptionService _encryptionService;
+
+        public AuthController(IEncryptionService encryptionService, IAuthService<User> authService, IMapper mapper)
         {
             _mapper = mapper;
             _authService = authService;
+            _encryptionService = encryptionService;
+
         }
         [HttpGet]
         public IActionResult Login() 
@@ -49,27 +54,27 @@ namespace JwtCookiesScheme.Controllers
                 {
                     return View(loginDto);
                 }
-                HttpContext.Response.Cookies.Append("accessToken", access, new CookieOptions
+                HttpContext.Response.Cookies.Append("accessToken",  _encryptionService.EncryptData(access) , new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
+                    //Secure = true,
                     SameSite = SameSiteMode.Strict,
                 });
-                HttpContext.Response.Cookies.Append("refreshToken", refresh, new CookieOptions
+                HttpContext.Response.Cookies.Append("refreshToken", _encryptionService.EncryptData(refresh), new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
+                    //Secure = true,
                     SameSite = SameSiteMode.Strict,
                 });
                 HttpContext.Response.Cookies.Append("isLogged", "Yes", new CookieOptions
                 {
                     HttpOnly = true,
-                    Secure = true,
+                    //Secure = true,
                     SameSite = SameSiteMode.Strict,
                 });
                 return RedirectToAction("Profile", "User");
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 return View(loginDto);
             }

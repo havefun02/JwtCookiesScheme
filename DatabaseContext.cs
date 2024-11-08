@@ -152,6 +152,7 @@ namespace JwtCookiesScheme
                 var configSection = configBuilder.GetSection("ConnectionStrings");
                 var connectionString = configSection["DefaultConnection"];
                 optionsBuilder.UseMySql(connectionString, new MySqlServerVersion(new Version(8, 0, 0)));
+
             }
         }
 

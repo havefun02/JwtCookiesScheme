@@ -19,7 +19,8 @@ namespace JwtCookiesScheme.Controllers
             _userService = userService;
             _mapper = mapper;
         }
-        [Authorize(Policy ="AdminOnly")]
+        //[Authorize(Policy ="AdminOnly")]
+        [Authorize(Policy ="ExecuteOnly")]
         [HttpGet]
         public async Task<IActionResult> Profile()
         {

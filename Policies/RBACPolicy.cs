@@ -16,6 +16,23 @@ namespace JwtCookiesScheme.Policies
         }
         public abstract Task<bool> IsAuthorized(string roleId);
     }
+
+    public class ExecutePermissionOnly : RoleRequirementBase
+    {
+        public ExecutePermissionOnly(RolePermissionsCacheService service) : base(service)
+        {
+        }
+        public override async Task<bool> IsAuthorized(string roleId)
+        {
+            var rps = await this._service.GetPermissionsForRoleAsync(roleId);
+            if (rps != null && rps.Contains("Execute"))
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+
     public class OwnerOnlyRequirement : RoleRequirementBase
     {
         public OwnerOnlyRequirement(RolePermissionsCacheService service):base(service)

@@ -54,6 +54,8 @@ namespace JwtCookiesScheme
             services.AddAuthorization(option =>
             {
                 option.AddPolicy("AdminOnly", policy => policy.Requirements.Add(new AdminOnlyRequirement(services.BuildServiceProvider().GetService<RolePermissionsCacheService>())));
+                option.AddPolicy("ExecuteOnly", policy => policy.Requirements.Add(new ExecutePermissionOnly(services.BuildServiceProvider().GetService<RolePermissionsCacheService>())));
+
             });
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "DEVELOPMENT API", Version = "v1" }); });
             services.AddMvc();

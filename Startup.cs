@@ -3,6 +3,7 @@ using CRUDFramework;
 using JwtCookiesScheme.Entities;
 using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Mapper;
+using JwtCookiesScheme.Migrations;
 using JwtCookiesScheme.Policies;
 using JwtCookiesScheme.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -21,6 +22,7 @@ namespace JwtCookiesScheme
         {
             _configuration=configuration;
         }
+
         public void ConfigureServices(IServiceCollection services) {
             services.AddDbContext<DatabaseContext>();
             services.AddMemoryCache();
@@ -74,7 +76,7 @@ namespace JwtCookiesScheme
             app.UseCors("AllowAll");
             app.UseDefaultFiles();
             app.UseStaticFiles();
-
+            app.UseMiddleware<Logger>();
             app.UseMiddleware<LockoutMiddleware>(serviceProvider);
 
             app.UseRouting();

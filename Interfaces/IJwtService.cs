@@ -8,9 +8,10 @@ namespace JwtCookiesScheme.Interfaces
         public required string token { get; set; }
         public required DateTime expiredAt { get; set; }
     }
-    public interface IJwtService<TUser> where TUser : UserBase
+    public interface IJwtService<TUser> 
+        where TUser :User 
     {
-        string GenerateAccessToken(TUser user);
+        string GenerateAccessToken(TUser user,ICollection<string> role);
         ClaimsPrincipal ValidateAccessToken(string token);
         RefreshTokenResult GenerateRefreshToken();
     }

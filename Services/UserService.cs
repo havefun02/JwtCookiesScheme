@@ -44,7 +44,7 @@ namespace JwtCookiesScheme.Services
             try
             {
                 var context = _repository.GetDbSet();
-                var users = await context.Include(u => u.UserRole).ThenInclude(r => r!.RolePermissions!).ThenInclude(rp => rp.Permission).ToListAsync();
+                var users = await context.ToListAsync();
                 return users;
 
             }
@@ -58,7 +58,7 @@ namespace JwtCookiesScheme.Services
             try
             {
                 var context = _repository.GetDbSet();
-                var users = await context.Include(u => u.UserRole).ThenInclude(r=>r!.RolePermissions!).ThenInclude(rp=>rp.Permission).SingleOrDefaultAsync(u => u.UserId == UserId);
+                var users = await context.SingleOrDefaultAsync(u => u.Id == UserId);
                 if (users == null) throw new ArgumentNullException($"Can not find {nameof(users)}");
                 return users;
 

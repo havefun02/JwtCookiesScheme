@@ -1,11 +1,13 @@
-﻿namespace JwtCookiesScheme.Entities
+﻿using Microsoft.AspNetCore.Identity;
+
+namespace JwtCookiesScheme.Entities
 {
-    public class User : UserBase
+    public class User : IdentityUser
     {
-        public virtual Role? UserRole { get; set; }
-        public string UserPassword { get; set; } = string.Empty;
-        public required string UserEmail { get; set; }
-        public virtual ResetToken? UserToken { get; set; }
-        public string UserPhone { get; set; } = string.Empty;
+        public string FirstName { set; get; }=string.Empty;
+        public string LastName { set; get; } = string.Empty;
+
+        public override string? PhoneNumber { get => base.PhoneNumber; set => base.PhoneNumber = value; }
+        public override bool PhoneNumberConfirmed { get => base.PhoneNumberConfirmed; set => base.PhoneNumberConfirmed = value; }
     }
 }

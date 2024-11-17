@@ -8,13 +8,7 @@ namespace JwtCookiesScheme.Mapper
     {
         public Mapping()
         {
-            CreateMap<User, UserViewModel>()
-                .ForMember(dest => dest.UserRole, opt => opt.MapFrom(src => src.UserRole!.RoleName))
-                .ForMember(dest => dest.UserPermissions,
-                    opt => opt.MapFrom(src =>
-                    src.UserRole!.RolePermissions!
-                        .Select(rp => rp.Permission!.PermissionName)
-                        .ToList()));
+            CreateMap<User, UserViewModel>();
         }
     }
 }

@@ -21,9 +21,9 @@ namespace JwtCookiesScheme.Services
         {
             if (!_memoryCache.TryGetValue(RolePermissionsKey, out Dictionary<string, List<string>>? rolePermissionsCache))
             {
-                rolePermissionsCache = await LoadRolePermissionsFromDbAsync();
+                //rolePermissionsCache = await LoadRolePermissionsFromDbAsync();
 
-                _memoryCache.Set(RolePermissionsKey, rolePermissionsCache);
+                //_memoryCache.Set(RolePermissionsKey, rolePermissionsCache);
             }
 
             return rolePermissionsCache!.TryGetValue(role, out var permissions) ? permissions : new List<string>();
@@ -32,31 +32,29 @@ namespace JwtCookiesScheme.Services
         {
             if (!_memoryCache.TryGetValue(RolesKey, out List<string>? roles))
             {
-                roles = await LoadRolesListAsync();
-                _memoryCache.Set(RolesKey, roles);
+                //roles = await LoadRolesListAsync();
+                //_memoryCache.Set(RolesKey, roles);
 
             }
             return roles!=null? roles: new List<string>(); 
 
         }
 
-        private async Task<List<string>> LoadRolesListAsync()
-        {
-            using (var scopeService = _serviceProvider.CreateScope())
-            {
-                var dbContext = scopeService.ServiceProvider.GetRequiredService<DatabaseContext>();
-                return await dbContext.Roles.Select(r=>r.RoleId).ToListAsync();
-            }
-        }
+        //private async Task<List<string>> LoadRolesListAsync()
+        //{
+        //    using (var scopeService = _serviceProvider.CreateScope())
+        //    {
+        //        var dbContext = scopeService.ServiceProvider.GetRequiredService<DatabaseContext>();
+        //    }
+        //}
 
-        private async Task<Dictionary<string, List<string>>> LoadRolePermissionsFromDbAsync()
-        {
-            using (var scopeService = _serviceProvider.CreateScope())
-            {
-                var dbContext = scopeService.ServiceProvider.GetRequiredService<DatabaseContext>();
-                return await dbContext.Roles.Include(r => r.RolePermissions).ToDictionaryAsync(r=>r.RoleName,r=>r.RolePermissions!.Select(rp=>rp.PermissionId).ToList());
-            }
-        }
+        //private async Task<Dictionary<string, List<string>>> LoadRolePermissionsFromDbAsync()
+        //{
+        //    using (var scopeService = _serviceProvider.CreateScope())
+        //    {
+        //        var dbContext = scopeService.ServiceProvider.GetRequiredService<DatabaseContext>();
+        //    }
+        //}
 
         public void ClearCache()
         {

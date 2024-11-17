@@ -20,7 +20,7 @@ namespace JwtCookiesScheme.Controllers
             _mapper = mapper;
         }
         //[Authorize(Policy ="AdminOnly")]
-        [Authorize(Policy ="ExecuteOnly")]
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
@@ -37,8 +37,7 @@ namespace JwtCookiesScheme.Controllers
             return View(userView);
         }
 
-        [Authorize(Policy = "AdminOnly")]
-
+        [Authorize]
         [HttpGet]
         public async Task<IActionResult> Index()
         {
@@ -55,6 +54,7 @@ namespace JwtCookiesScheme.Controllers
             return View(userView);
         }
         [Authorize]
+        [HttpPost]
         public IActionResult Logout()
         {
             try
@@ -66,7 +66,6 @@ namespace JwtCookiesScheme.Controllers
                     return NotFound("User ID not found in claims.");
                 }
                 HttpContext.Response.Cookies.Delete("accessToken");
-                HttpContext.Response.Cookies.Delete("isLogged");
                 HttpContext.Response.Cookies.Delete("refreshToken");
                 return RedirectToAction("Login","Auth");
             }

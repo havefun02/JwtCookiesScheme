@@ -33,16 +33,18 @@ namespace JwtCookiesScheme.Services
             }
         }
 
-        public string GenerateAccessToken(User user)
+        public string GenerateAccessToken(User user,ICollection<string> userRole)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             var claims = new List<Claim>
             {
-                new Claim(ClaimTypes.NameIdentifier, user.UserId),
-                new Claim(ClaimTypes.Role, user.UserRoleId),
+                new Claim(ClaimTypes.NameIdentifier, user.Id),
                 new Claim(ClaimTypes.Name, user.UserName)
             };
+            var roleClaims= userRole.Select(r => new Claim(ClaimTypes.Role, r)).ToList();
+            claims.AddRange(roleClaims);
+
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),

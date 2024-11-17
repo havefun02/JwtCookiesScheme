@@ -2,8 +2,7 @@
 
 namespace JwtCookiesScheme.Entities
 {
-    public class Role:IdentityRole
+    public class RoleClaim:IdentityRoleClaim<string>
     {
-
     }
 }

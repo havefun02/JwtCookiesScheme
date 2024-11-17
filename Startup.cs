@@ -1,9 +1,12 @@
 ﻿using AutoMapper;
 using CRUDFramework;
+using FluentValidation;
+using FluentValidation.AspNetCore;
+using JwtCookiesScheme.Dtos;
+using JwtCookiesScheme.Dtos.Validation;
 using JwtCookiesScheme.Entities;
 using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Mapper;
-using JwtCookiesScheme.Migrations;
 using JwtCookiesScheme.Policies;
 using JwtCookiesScheme.Services;
 using Microsoft.AspNetCore.Authentication;
@@ -12,6 +15,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.OpenApi.Models;
+using System;
 
 namespace JwtCookiesScheme
 {
@@ -23,13 +27,27 @@ namespace JwtCookiesScheme
             _configuration=configuration;
         }
 
-        public void ConfigureServices(IServiceCollection services) {
+        public void ConfigureServices(IServiceCollection services)
+        {
             services.AddDbContext<DatabaseContext>();
+            services.AddAppIdentity<User,Role>()
+                .AddEntityFrameworkStores<DatabaseContext>()
+                .AddDefaultTokenProviders();
+
+            //services.AddIdentity<User, Role>(options =>
+            //{
+            //    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(30);
+            //    options.Lockout.MaxFailedAccessAttempts = 5;
+            //    options.Lockout.AllowedForNewUsers = true;
+            //})
+            //        .AddEntityFrameworkStores<DatabaseContext>()
+            //        .AddDefaultTokenProviders();
+          
+
             services.AddMemoryCache();
             services.AddSingleton<RolePermissionsCacheService>();
             services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler<AdminOnlyRequirement>>();
             services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler<OwnerOnlyRequirement>>();
-
             services.AddSingleton<IMapper>(provider =>
             {
                 var configuration = new MapperConfiguration(cfg =>
@@ -39,18 +57,21 @@ namespace JwtCookiesScheme
                 return configuration.CreateMapper();
             });
             services.AddDataProtection()
-                 .SetApplicationName("AuthenticationApp")
+                .SetApplicationName("authApp")
                 .PersistKeysToFileSystem(new DirectoryInfo(@"C:\Temp\Keys"))
                 .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
+
+
+            services.AddScoped<IValidator<LoginRequest>, LoginRequestValidation>();
+            services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidation>();
+            services.AddScoped<IValidator<ChangePasswordRequest>, ChangePasswordValidation>();
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
-            services.AddScoped<ILockoutService, LockoutService>();
             services.AddScoped<IUserService<User>, UserService>();
-            services.AddScoped<IAuthService<User>, AuthService>();
+            services.AddScoped<ITokenService<RefreshToken>, TokenService>();
             services.AddScoped<IJwtService<User>, JwtService>();
             services.AddScoped<IEncryptionService, EncryptionService>();
-            services.AddScoped<ITokenService<ResetToken>, TokenService>();
-            services.AddAuthentication("JWT-COOKIES-SCHEME")
-                .AddScheme<AuthenticationSchemeOptions, AuthenticationScheme>("JWT-COOKIES-SCHEME", null);
+            services.AddScoped<IAuthService, AuthService>();
+           
             services.AddAuthorization(option =>
             {
                 option.AddPolicy("AdminOnly", policy => policy.Requirements.Add(new AdminOnlyRequirement(services.BuildServiceProvider().GetService<RolePermissionsCacheService>())));
@@ -79,8 +100,6 @@ namespace JwtCookiesScheme
             app.UseDefaultFiles();
             app.UseStaticFiles();
             app.UseMiddleware<Logger>();
-            app.UseMiddleware<LockoutMiddleware>(serviceProvider);
-
             app.UseRouting();
             app.UseAuthentication();
             app.UseAuthorization();

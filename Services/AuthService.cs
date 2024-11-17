@@ -7,130 +7,94 @@ using JwtCookiesScheme.Dtos;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
-using Microsoft.AspNetCore.DataProtection;
+using JwtCookiesScheme.Types;
+using Serilog;
 
 namespace JwtCookiesScheme.Services
 {
-    public class AuthService : IAuthService<User>
+    public class AuthService : IAuthService
     {
-        private readonly IRepository<User, DatabaseContext> _userRepository;
-        private readonly IRepository<Role, DatabaseContext> _roleRepository;
-        private readonly IJwtService<User> _jwtService;
+        private readonly UserManager<User> _userManager;
+        private readonly SignInManager<User> _signInManager;
+        private readonly ITokenService<RefreshToken> _tokenService;
 
-        public AuthService( IRepository<User, DatabaseContext> userRepository, IRepository<Role, DatabaseContext> roleRepository, IJwtService<User> jwtService)
+
+        public AuthService(
+            UserManager<User> userManager,
+            SignInManager<User> signInManager,
+            ITokenService<RefreshToken> tokenService
+        )
         {
-            _roleRepository = roleRepository;
-            _userRepository = userRepository;
-            _jwtService = jwtService;
+            _userManager = userManager;
+            _signInManager = signInManager;
+            _tokenService = tokenService;
         }
-        public async Task<(string, string)> Login(LoginDto dto)
+        public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
         {
-            var userContext = _userRepository.GetDbSet();
-
-
-            var user = await userContext.Include(u=>u.UserToken).SingleOrDefaultAsync(u => u.UserEmail == dto.UserEmail); // Assuming this method exists
-
-            if (user == null)
+            var user = new User { UserName = request.UserName, Email = request.UserEmail ,PhoneNumber=request.UserPhone,PhoneNumberConfirmed=false,Id=Guid.NewGuid().ToString() };
+            var result = await _userManager.CreateAsync(user,request.UserPassword);
+            if (!result.Succeeded)
             {
-                throw new ArgumentException("Invalid email or password.");
+                return new RegisterResponse { RegisterResult = Result.Fail, ErrorMessage="Register fail" };
             }
-
-
-            var passwordHasher = new PasswordHasher<User>();
-            var result = passwordHasher.VerifyHashedPassword(user, user.UserPassword!, dto.UserPassword!);
-
-            if (result == PasswordVerificationResult.Failed)
+            var roleResult = await _userManager.AddToRoleAsync(user, RoleEnum.GUEST.ToString());
+            if (!roleResult.Succeeded)
             {
-                throw new ArgumentException("Invalid email or password.");
-            }
 
-            var accessToken = _jwtService.GenerateAccessToken(user);
-            var refreshToken = _jwtService.GenerateRefreshToken();
-            try
-            {
-                if (user.UserToken != null)
-                {
-                    user.UserToken.TokenSerect = refreshToken.token!;
-                    user.UserToken.TokenExpiredAt = refreshToken.expiredAt;
-                    await _userRepository.Update(user);
-                }
-                else
-                {
-                    var token=new ResetToken() { TokenId=Guid.NewGuid().ToString(),TokenSerect= refreshToken.token,TokenExpiredAt= refreshToken.expiredAt,UserId=user.UserId };
-                    user.UserToken = token;
-                    await _userRepository.Update(user);
-                }
+                return new RegisterResponse { RegisterResult = Result.Fail, ErrorMessage = "Failed to create role during register" };
             }
-            catch (Exception ex)
-            {
-                throw new Exception("Internal server error during query user login operation " + ex.Message);
-            }
-            return (accessToken, refreshToken.token!);
+            return new RegisterResponse { RegisterResult =Result.Success, SuccessMessage = "Register successfully" };
+
         }
-
-        public async Task<bool> Register(RegisterDto user)
+        public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
             try
             {
-                var userContext = _userRepository.GetDbSet();
-                var roleContext = _roleRepository.GetDbSet();
-
-                var existingUser = await userContext.SingleOrDefaultAsync(u => u.UserEmail == user.UserEmail);
-                if (existingUser != null)
-                {
-                    throw new ArgumentException("User with this email already exists.");
-                }
-
-                var guestRole = await roleContext.SingleOrDefaultAsync(r => r.RoleName == "Guest");
-                if (guestRole == null) throw new Exception("Internal exception");
-
-                var newUser = new User
-                {
-                    UserId = Guid.NewGuid().ToString(),
-                    UserName = user.UserName,
-                    UserEmail = user.UserEmail,
-                    UserPhone = user.UserPhone,
-                    UserRoleId = guestRole.RoleId,
-                };
-
-                var passwordHasher = new PasswordHasher<User>();
-                newUser.UserPassword = passwordHasher.HashPassword(newUser, user.UserPassword);
-
-                var userCreated = await _userRepository.CreateAsync(newUser);
-                if (userCreated != null)
-                    return true;
-
-                return false;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
-
-        public async Task<bool> ChangePassword(ChangePasswordDto dto)
-        {
-            try
-            {
-                var userContext = _userRepository.GetDbSet();
-                var user = await userContext.SingleOrDefaultAsync(u => u.UserEmail == dto.UserEmail);
+                var user = await _userManager.FindByNameAsync(request.UserName);
                 if (user == null)
                 {
-                    throw new ArgumentException("User not found.");
+                    return new LoginResponse { LoginResult = Result.Fail, LoginErrorMessage = "Invalid username or password." };
                 }
-
-                var passwordHasher = new PasswordHasher<User>();
-                var result = passwordHasher.VerifyHashedPassword(user, user.UserPassword!, dto.CurrentPassword);
-
-                if (result == PasswordVerificationResult.Failed)
+                var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
+                if (!result.Succeeded)
                 {
-                    throw new ArgumentException("Current password is incorrect.");
+                    return new LoginResponse { LoginResult = Result.Fail, LoginErrorMessage ="Invalid username or password." };
                 }
 
-                user.UserPassword = passwordHasher.HashPassword(user, dto.NewPassword);
-                var updateResult = await _userRepository.Update(user);
-                if (updateResult == null) throw new InvalidOperationException("Internal error while changing password");
-                return true;
+                var jwtToken = await _tokenService.GenerateTokensAsync(user);
+                return new LoginResponse { LoginResult = Result.Success, AccessToken = jwtToken.AccessToken, RefreshToken = jwtToken.RefreshToken };
+            }
+            catch (Exception ex) {
+                    return new LoginResponse { LoginResult = Result.Fail, LoginErrorMessage="Internal server" };
+
+            }
+        }
+
+
+
+      
+        public async Task<ChangePasswordResponse> ChangePasswordAsync(ChangePasswordRequest request)
+        {
+            try
+            {
+                var user = await _userManager.FindByNameAsync(request.UserName);
+                if (user == null)
+                {
+                    return new ChangePasswordResponse { ChangePasswordResult = Result.Fail, ChangePasswordErrorMessage = "Invalid username or password." };
+                }
+
+                if (request.NewPassword != request.ConfirmPassword)
+                {
+                    return new ChangePasswordResponse { ChangePasswordResult = Result.Fail, ChangePasswordErrorMessage = "Confirm password is not correct." };
+                }
+                var updateResult = _userManager.ChangePasswordAsync(user,request.Password,request.NewPassword);
+
+                if (updateResult.IsCompletedSuccessfully){
+                    await this._tokenService.CancelToken(user);
+                    return new ChangePasswordResponse { ChangePasswordResult = Result.Success, ChangePasswordSuccess = "Change password successfully" };
+                }
+                return new ChangePasswordResponse { ChangePasswordResult = Result.Fail, ChangePasswordErrorMessage = "Internal server error." };
+
             }
             catch { throw; }
         }

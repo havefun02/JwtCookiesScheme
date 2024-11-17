@@ -2,7 +2,6 @@
 using Serilog;
 namespace JwtCookiesScheme
 {
-    
         public class Logger
         {
             private readonly RequestDelegate _next;

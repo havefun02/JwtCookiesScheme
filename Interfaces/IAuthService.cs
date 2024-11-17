@@ -3,10 +3,10 @@ using JwtCookiesScheme.Dtos;
 namespace JwtCookiesScheme.Interfaces
 {
  
-    public interface IAuthService<Entity>
+    public interface IAuthService
     {
-        public Task<(string, string)> Login(LoginDto user);
-        public Task<bool> Register(RegisterDto user);
-        public Task<bool> ChangePassword(ChangePasswordDto dto);
+        Task<RegisterResponse> RegisterAsync(RegisterRequest request);
+        Task<LoginResponse> LoginAsync(LoginRequest request);
+        Task<ChangePasswordResponse> ChangePasswordAsync(ChangePasswordRequest request);
     }
 }

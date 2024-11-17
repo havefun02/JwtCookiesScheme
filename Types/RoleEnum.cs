@@ -2,9 +2,9 @@
 {
     public enum RoleEnum
     {
-        Admin,
-        User,
-        Guest
+        ADMIN,
+        USER,
+        GUEST
     }
 
 }

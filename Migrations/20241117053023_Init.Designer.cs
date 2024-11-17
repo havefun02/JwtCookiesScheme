@@ -3,6 +3,7 @@ using System;
 using JwtCookiesScheme;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,42 +11,16 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtCookiesScheme.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20241117053023_Init")]
+    partial class Init
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("ProductVersion", "8.0.0")
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
-
-            modelBuilder.Entity("JwtCookiesScheme.Entities.RefreshToken", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<DateTime>("TokenExpiredAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("varchar(255)");
-
-                    b.Property<string>("Value")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<bool>("isInvoked")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("tinyint(1)")
-                        .HasDefaultValue(false);
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId")
-                        .IsUnique();
-
-                    b.ToTable("RefreshTokens");
-                });
 
             modelBuilder.Entity("JwtCookiesScheme.Entities.Role", b =>
                 {
@@ -107,8 +82,14 @@ namespace JwtCookiesScheme.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("varchar(255)");
 
+                    b.Property<DateTime>("TokenExpiredAt")
+                        .HasColumnType("datetime(6)");
+
                     b.Property<string>("Value")
                         .HasColumnType("longtext");
+
+                    b.Property<bool>("isInvoked")
+                        .HasColumnType("tinyint(1)");
 
                     b.HasKey("UserId", "LoginProvider", "Name");
 
@@ -133,14 +114,6 @@ namespace JwtCookiesScheme.Migrations
 
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("tinyint(1)");
-
-                    b.Property<string>("FirstName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("LastName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
 
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("tinyint(1)");
@@ -245,16 +218,6 @@ namespace JwtCookiesScheme.Migrations
                     b.HasIndex("RoleId");
 
                     b.ToTable("AspNetUserRoles", (string)null);
-                });
-
-            modelBuilder.Entity("JwtCookiesScheme.Entities.RefreshToken", b =>
-                {
-                    b.HasOne("JwtCookiesScheme.Entities.User", "User")
-                        .WithOne()
-                        .HasForeignKey("JwtCookiesScheme.Entities.RefreshToken", "UserId")
-                        .OnDelete(DeleteBehavior.Cascade);
-
-                    b.Navigation("User");
                 });
 
             modelBuilder.Entity("JwtCookiesScheme.Entities.RoleClaim", b =>

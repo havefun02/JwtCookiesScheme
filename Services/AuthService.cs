@@ -16,34 +16,68 @@ namespace JwtCookiesScheme.Services
     {
         private readonly AppUserManager _userManager;
         private readonly AppSignInManager _signInManager;
-
+        private readonly DatabaseContext _databaseContext;
 
         public AuthService(
             AppUserManager userManager,
-            AppSignInManager signInManager
+            AppSignInManager signInManager,
+            DatabaseContext databaseContext
+
         )
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _databaseContext = databaseContext;
         }
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
         {
-            var user = new User { UserName = request.UserName, Email = request.UserEmail ,PhoneNumber=request.UserPhone,PhoneNumberConfirmed=false,Id=Guid.NewGuid().ToString() };
-            var result = await _userManager.CreateAsync(user,request.UserPassword);
-            if (!result.Succeeded)
+            using var transaction = await _databaseContext.Database.BeginTransactionAsync();
+            try
             {
-                return new RegisterResponse { RegisterResult = Result.Fail, ErrorMessage="Register fail" };
+                var user = new User
+                {
+                    UserName = request.UserName,
+                    Email = request.UserEmail,
+                    PhoneNumber = request.UserPhone,
+                    PhoneNumberConfirmed = false,
+                    Id = Guid.NewGuid().ToString()
+                };
+
+                var result = await _userManager.CreateAsync(user, request.UserPassword);
+                if (!result.Succeeded)
+                {
+                    return new RegisterResponse
+                    {
+                        RegisterResult = Result.Fail,
+                        ErrorMessage = "Register failed: " + string.Join(", ", result.Errors.Select(e => e.Description))
+                    };
+                }
+
+                var roleResult = await _userManager.AddToRoleAsync(user, RoleEnum.GUEST.ToString());
+                if (!roleResult.Succeeded)
+                {
+                    throw new Exception("Role assignment failed: " + string.Join(", ", roleResult.Errors.Select(e => e.Description)));
+                }
+
+                await transaction.CommitAsync();
+
+                return new RegisterResponse
+                {
+                    RegisterResult = Result.Success,
+                    SuccessMessage = "Register successfully"
+                };
             }
-            var roleResult = await _userManager.AddToRoleAsync(user, RoleEnum.GUEST.ToString());
-            if (!roleResult.Succeeded)
+            catch (Exception ex)
             {
+                await transaction.RollbackAsync();
 
-                return new RegisterResponse { RegisterResult = Result.Fail, ErrorMessage = "Failed to create role during register" };
+                return new RegisterResponse
+                {
+                    RegisterResult = Result.Fail,
+                    ErrorMessage = "An error occurred: " + ex.Message
+                };
             }
-            return new RegisterResponse { RegisterResult =Result.Success, SuccessMessage = "Register successfully" };
-
         }
-      
         public async Task<ChangePasswordResponse> ChangePasswordAsync(ChangePasswordRequest request)
         {
             try

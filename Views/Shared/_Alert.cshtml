@@ -1,0 +1,12 @@
+﻿@model JwtCookiesScheme.ViewModels.ErrorMessageViewModel
+@if (!string.IsNullOrEmpty(Model?.Message))
+{
+    var alertClass = $"alert alert-{Model.AlertType} {(Model.Dismissible ? "alert-dismissible fade show" : "")}";
+    <div class="@alertClass" role="alert">
+        @Model.Message
+        @if (Model.Dismissible)
+        {
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        }
+    </div>
+}

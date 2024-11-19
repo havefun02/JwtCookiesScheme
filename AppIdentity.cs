@@ -34,7 +34,7 @@ public static class IdentityServiceCollectionExtensions
             options.DefaultSignInScheme = "JWT-COOKIES-SCHEME";
             options.DefaultChallengeScheme = "JWT-COOKIES-SCHEME";
         })
- .AddScheme<AuthenticationSchemeOptions, AuthenticationAppScheme>(
+    .AddScheme<AuthenticationSchemeOptions, AuthenticationAppScheme>(
      "JWT-COOKIES-SCHEME",
      options => { }).AddCookie(options =>
      {

@@ -5,6 +5,7 @@ using JwtCookiesScheme.Dtos;
 using JwtCookiesScheme.Types;
 using Microsoft.AspNetCore.Authentication;
 using JwtCookiesScheme.Services;
+using JwtCookiesScheme.ViewModels;
 
 namespace JwtCookiesScheme.Controllers
 {
@@ -33,7 +34,7 @@ namespace JwtCookiesScheme.Controllers
             return View();
         }
         [HttpGet]
-        public IActionResult Reset()
+        public IActionResult ChangePassword()
         {
             return View();
         }
@@ -44,7 +45,7 @@ namespace JwtCookiesScheme.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewData["Error"] = "Invalid Username or Password";
+                TempData["Alert"] =new ErrorMessageViewModel() { Message = "Invalid Username or Password", AlertType = AlertType.info.ToString() };
                 return View(loginDto);
             }
             try
@@ -53,7 +54,7 @@ namespace JwtCookiesScheme.Controllers
                 var result=await _signInManager.PasswordSignInAsync(loginDto.UserName, loginDto.Password,false,false);
                 if (!result.Succeeded)
                 {
-                    ViewData["Error"] = "Please try again";
+                    TempData["Alert"] = new ErrorMessageViewModel() { Message = "Please try again", AlertType = AlertType.info.ToString() };
                     return View(loginDto);
 
                 }
@@ -64,7 +65,8 @@ namespace JwtCookiesScheme.Controllers
             }
             catch (Exception ex)
             {
-                ViewData["Error"] = ex.Message;
+                TempData["Alert"] = new ErrorMessageViewModel() { Message = ex.Message, AlertType = AlertType.warning.ToString() };
+
                 return View(loginDto);
             }
         }
@@ -74,7 +76,7 @@ namespace JwtCookiesScheme.Controllers
         {
             if (!ModelState.IsValid)
             {
-                ViewData["Error"] = "Invalid data input.";
+                TempData["Alert"] = new ErrorMessageViewModel() { Message = "Invalid data input.", AlertType = AlertType.info.ToString() };
                 return View(registerDto);
             }
             try
@@ -86,30 +88,41 @@ namespace JwtCookiesScheme.Controllers
                 }
                 else
                 {
-                    ViewData["Error"] = "Invalid data input.";
+                    TempData["Alert"] = new ErrorMessageViewModel() { Message = registerResult.ErrorMessage!, AlertType = AlertType.info.ToString() };
                     return View(registerDto);
                 }
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error: {ex.Message}");
-                ViewData["Error"] = ex.Message;
+                TempData["Alert"] = new ErrorMessageViewModel() { Message = ex.Message, AlertType = AlertType.warning.ToString() };
                 return View(registerDto);
             }
         }
-        [HttpPost("change-password")]
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangePassword(ChangePasswordRequest changePasswordDto)
         {
+            if (!ModelState.IsValid) { 
+                TempData["Alert"] = new ErrorMessageViewModel() { Message = "Invalid data input.", AlertType = AlertType.warning.ToString() };
+                return View(changePasswordDto);
+
+            }
             try
             {
                 var changePasswordResult = await _authService.ChangePasswordAsync(changePasswordDto);
-                if (changePasswordResult.ChangePasswordResult==Result.Success) return RedirectToAction("Login","Auth");
-                else return View(changePasswordDto);
+                if (changePasswordResult.ChangePasswordResult == Result.Success) { 
+                    TempData["Alert"] = new ErrorMessageViewModel() { Message = changePasswordResult.ChangePasswordSuccess, AlertType = AlertType.info.ToString() };
+                    return RedirectToAction("Login", "Auth"); 
+                }
+                else
+                {
+                    TempData["Alert"] = new ErrorMessageViewModel() { Message = changePasswordResult.ChangePasswordErrorMessage, AlertType = AlertType.info.ToString() };
+                    return View(changePasswordDto);
+                }
             }
             catch (Exception ex)
             {
-                ViewData["Error"] = ex.Message;
+                TempData["Alert"] = new ErrorMessageViewModel() { Message = ex.Message, AlertType = AlertType.warning.ToString() };
                 return View(changePasswordDto);
             }
         }

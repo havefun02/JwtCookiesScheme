@@ -73,7 +73,9 @@ namespace JwtCookiesScheme
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
         {
             Response.StatusCode = StatusCodes.Status403Forbidden;
-            Context.Response.Redirect("/auth/register");
+            var cookieAuthOptions = _cookieOptions.Get(CookieAuthenticationDefaults.AuthenticationScheme);
+            var forbiddenPath = cookieAuthOptions.AccessDeniedPath;
+            Context.Response.Redirect(forbiddenPath);
             return Task.CompletedTask;
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()

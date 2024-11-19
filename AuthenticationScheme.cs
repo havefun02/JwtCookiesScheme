@@ -1,5 +1,6 @@
 ﻿using JwtCookiesScheme.Entities;
 using JwtCookiesScheme.Interfaces;
+using JwtCookiesScheme.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
@@ -9,24 +10,24 @@ namespace JwtCookiesScheme
 {
     public class AuthenticationAppScheme : AuthenticationHandler<AuthenticationSchemeOptions>
     {
-        private readonly ITokenService<RefreshToken> _tokenService;
-        private readonly UserManager<User> _userManager;
-        private readonly IEncryptionService _encryptionService;
+        private readonly AppUserManager _userManager;
+        private readonly AppSignInManager _appSignInManager;
+
         private string accessToken;
         private string refreshToken;
 
         public AuthenticationAppScheme(
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
-            ITokenService<RefreshToken> tokenService,
             UrlEncoder encoder,
             IEncryptionService encryptionService,
-            UserManager<User> userManager
+            AppUserManager userManager,
+            AppSignInManager appSignInManager
+
             )
             : base(options, logger, encoder)
         {
-            _encryptionService = encryptionService;
-            _tokenService = tokenService;
+            _appSignInManager = appSignInManager;
             _userManager = userManager;
             accessToken = "";
             refreshToken = "";
@@ -40,36 +41,12 @@ namespace JwtCookiesScheme
             }
             try
             {
+                var result= await this._appSignInManager.RefreshTokenAsync(refreshToken);  
+                if (result==null)
+                    return AuthenticateResult.Fail(new Exception("Please login again"));
 
-                var refreshTokenInfo = await _tokenService.GetTokenInfoAsync(refreshToken);
-                if (refreshTokenInfo == null || refreshTokenInfo.TokenExpiredAt < DateTime.UtcNow)
-                {
-                    return AuthenticateResult.Fail(new Exception("Invalid Token"));
-                }
-                var user = await _userManager.FindByIdAsync(refreshTokenInfo.UserId);
-                if (user == null) {
-                    return AuthenticateResult.Fail(new Exception("Invalid refresh token"));
-                }
-
-                var tokensResult =await this._tokenService.GenerateTokensAsync(user);
-                if (tokensResult != null)
-                {
-                    Context.Response.Cookies.Append("accessToken", _encryptionService.EncryptData(tokensResult.AccessToken), new CookieOptions
-                    {
-                        HttpOnly = true,
-                        SameSite = SameSiteMode.Strict,
-                    });
-
-                    Context.Response.Cookies.Append("refreshToken", _encryptionService.EncryptData(tokensResult.RefreshToken), new CookieOptions
-                    {
-                        HttpOnly = true,
-                        SameSite = SameSiteMode.Strict,
-                    });
-                    var principal = _tokenService.ValidateAccessToken(tokensResult.AccessToken);
-                    var ticket = new AuthenticationTicket(principal, "JWT-COOKIES-SCHEME");
-                    return AuthenticateResult.Success(ticket);
-                }
-                return AuthenticateResult.Fail("Failed to generate new access token");
+                var ticket = new AuthenticationTicket(result, "JWT-COOKIES-SCHEME");
+                return AuthenticateResult.Success(ticket);
             }
             catch (ArgumentException ex)
             {
@@ -97,18 +74,15 @@ namespace JwtCookiesScheme
             var isLoginEndpoint = Context.Request.Path.StartsWithSegments("/auth/login");
             refreshToken = Context.Request.Cookies["refreshToken"];
             accessToken = Context.Request.Cookies["accessToken"];
-
             if (string.IsNullOrEmpty(refreshToken) || string.IsNullOrEmpty(accessToken))
             {
-                return AuthenticateResult.Fail(new Exception("Unauthorize"));
+                return AuthenticateResult.Fail(new Exception("Unauthorized."));
             }
             try
             {
-
-                refreshToken = _encryptionService.DecryptData(refreshToken);
-                accessToken = _encryptionService.DecryptData(accessToken);
-                var principal = _tokenService.ValidateAccessToken(accessToken);
-                var ticket = new AuthenticationTicket(principal, "JWT-COOKIES-SCHEME");
+                var result = await _appSignInManager.ValidateTokens(accessToken, refreshToken);
+                if (result==null) return AuthenticateResult.Fail(new Exception("Unauthorized."));
+                var ticket = new AuthenticationTicket(result, "JWT-COOKIES-SCHEME");
                 if (isLoginEndpoint)
                 {
                     Context.Response.Redirect("/User/Profile");
@@ -128,9 +102,8 @@ namespace JwtCookiesScheme
                     return verifyExpired;
                 }
 
-                return AuthenticateResult.Fail(new Exception("Failed to refresh token"));
+                return AuthenticateResult.Fail(new Exception("Your refresh token is expired. Please login again."));
             }
-
             catch (Exception ex)
             {
                 return AuthenticateResult.Fail($"Authentication failed: {ex.Message}");

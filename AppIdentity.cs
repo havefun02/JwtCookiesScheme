@@ -36,7 +36,12 @@ public static class IdentityServiceCollectionExtensions
         })
  .AddScheme<AuthenticationSchemeOptions, AuthenticationAppScheme>(
      "JWT-COOKIES-SCHEME",
-     options => { });
+     options => {});
+ //.AddCookie("JWT-COOKIES-SCHEME", options =>
+ //    {
+ //        options.LoginPath = "/Auth/Login";
+ //        options.AccessDeniedPath = "/Auth/AccessDenied";
+ //    });
 
 
         // Services used by identity

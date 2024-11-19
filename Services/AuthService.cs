@@ -14,20 +14,17 @@ namespace JwtCookiesScheme.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<User> _userManager;
-        private readonly SignInManager<User> _signInManager;
-        private readonly ITokenService<RefreshToken> _tokenService;
+        private readonly AppUserManager _userManager;
+        private readonly AppSignInManager _signInManager;
 
 
         public AuthService(
-            UserManager<User> userManager,
-            SignInManager<User> signInManager,
-            ITokenService<RefreshToken> tokenService
+            AppUserManager userManager,
+            AppSignInManager signInManager
         )
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _tokenService = tokenService;
         }
         public async Task<RegisterResponse> RegisterAsync(RegisterRequest request)
         {
@@ -46,32 +43,6 @@ namespace JwtCookiesScheme.Services
             return new RegisterResponse { RegisterResult =Result.Success, SuccessMessage = "Register successfully" };
 
         }
-        public async Task<LoginResponse> LoginAsync(LoginRequest request)
-        {
-            try
-            {
-                var user = await _userManager.FindByNameAsync(request.UserName);
-                if (user == null)
-                {
-                    return new LoginResponse { LoginResult = Result.Fail, LoginErrorMessage = "Invalid username or password." };
-                }
-                var result = await _signInManager.CheckPasswordSignInAsync(user, request.Password, false);
-                if (!result.Succeeded)
-                {
-                    return new LoginResponse { LoginResult = Result.Fail, LoginErrorMessage ="Invalid username or password." };
-                }
-
-                var jwtToken = await _tokenService.GenerateTokensAsync(user);
-                return new LoginResponse { LoginResult = Result.Success, AccessToken = jwtToken.AccessToken, RefreshToken = jwtToken.RefreshToken };
-            }
-            catch (Exception ex) {
-                    return new LoginResponse { LoginResult = Result.Fail, LoginErrorMessage="Internal server" };
-
-            }
-        }
-
-
-
       
         public async Task<ChangePasswordResponse> ChangePasswordAsync(ChangePasswordRequest request)
         {
@@ -90,7 +61,6 @@ namespace JwtCookiesScheme.Services
                 var updateResult = _userManager.ChangePasswordAsync(user,request.Password,request.NewPassword);
 
                 if (updateResult.IsCompletedSuccessfully){
-                    await this._tokenService.CancelToken(user);
                     return new ChangePasswordResponse { ChangePasswordResult = Result.Success, ChangePasswordSuccess = "Change password successfully" };
                 }
                 return new ChangePasswordResponse { ChangePasswordResult = Result.Fail, ChangePasswordErrorMessage = "Internal server error." };

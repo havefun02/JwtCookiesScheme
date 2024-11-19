@@ -34,16 +34,7 @@ namespace JwtCookiesScheme
                 .AddEntityFrameworkStores<DatabaseContext>()
                 .AddDefaultTokenProviders();
 
-            //services.AddIdentity<User, Role>(options =>
-            //{
-            //    options.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromDays(30);
-            //    options.Lockout.MaxFailedAccessAttempts = 5;
-            //    options.Lockout.AllowedForNewUsers = true;
-            //})
-            //        .AddEntityFrameworkStores<DatabaseContext>()
-            //        .AddDefaultTokenProviders();
-          
-
+            
             services.AddMemoryCache();
             services.AddSingleton<RolePermissionsCacheService>();
             services.AddScoped<IAuthorizationHandler, RoleAuthorizationHandler<AdminOnlyRequirement>>();
@@ -61,17 +52,20 @@ namespace JwtCookiesScheme
                 .PersistKeysToFileSystem(new DirectoryInfo(@"C:\Temp\Keys"))
                 .SetDefaultKeyLifetime(TimeSpan.FromDays(30));
 
-
+            services.AddScoped<AuthenticationAppScheme>();
             services.AddScoped<IValidator<LoginRequest>, LoginRequestValidation>();
             services.AddScoped<IValidator<RegisterRequest>, RegisterRequestValidation>();
             services.AddScoped<IValidator<ChangePasswordRequest>, ChangePasswordValidation>();
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
             services.AddScoped<IUserService<User>, UserService>();
-            services.AddScoped<ITokenService<RefreshToken>, TokenService>();
-            services.AddScoped<IJwtService<User>, JwtService>();
+            services.AddScoped<IJwtService, JwtService>();
             services.AddScoped<IEncryptionService, EncryptionService>();
+            services.AddScoped<AppSignInManager>();
+            services.AddScoped<AppUserManager>();
             services.AddScoped<IAuthService, AuthService>();
-           
+
+
+
             services.AddAuthorization(option =>
             {
                 option.AddPolicy("AdminOnly", policy => policy.Requirements.Add(new AdminOnlyRequirement(services.BuildServiceProvider().GetService<RolePermissionsCacheService>())));

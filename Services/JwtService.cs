@@ -8,7 +8,7 @@ using JwtCookiesScheme.Entities;
 
 namespace JwtCookiesScheme.Services
 {
-    public class JwtService : IJwtService<User>
+    public class JwtService : IJwtService
     {
         private readonly string _secretKey;
         private readonly string _issuer;
@@ -33,25 +33,23 @@ namespace JwtCookiesScheme.Services
             }
         }
 
-        public string GenerateAccessToken(User user,ICollection<string> userRole)
+        public string GenerateAccessToken(IDictionary<string,object> claims)
         {
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_secretKey));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-            var claims = new List<Claim>
-            {
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName)
-            };
-            var roleClaims= userRole.Select(r => new Claim(ClaimTypes.Role, r)).ToList();
-            claims.AddRange(roleClaims);
+            //var claims = new List<Claim>
+            //{
+            //    new Claim(ClaimTypes.NameIdentifier, user.Id),
+            //    new Claim(ClaimTypes.Name, user.UserName)
+            //};
 
             var tokenDescriptor = new SecurityTokenDescriptor
             {
-                Subject = new ClaimsIdentity(claims),
                 Expires = DateTime.UtcNow.AddMinutes(_tokenExpiration),
+                Claims = claims,
                 Issuer = _issuer,
                 Audience = _audience,
-                SigningCredentials = creds
+                SigningCredentials = creds,
             };
 
             var tokenHandler = new JwtSecurityTokenHandler();

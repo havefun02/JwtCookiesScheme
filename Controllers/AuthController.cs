@@ -3,20 +3,24 @@ using Microsoft.AspNetCore.Mvc;
 using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Dtos;
 using JwtCookiesScheme.Types;
+using Microsoft.AspNetCore.Authentication;
+using JwtCookiesScheme.Services;
 
 namespace JwtCookiesScheme.Controllers
 {
     public class AuthController : Controller
     {
+        private readonly AppSignInManager _signInManager;
         private readonly IAuthService _authService;
         private readonly IMapper _mapper; 
         private readonly IEncryptionService _encryptionService;
 
-        public AuthController(IEncryptionService encryptionService, IAuthService authService, IMapper mapper)
+        public AuthController(IEncryptionService encryptionService, IAuthService authService, IMapper mapper, AppSignInManager signInManager)
         {
             _mapper = mapper;
             _authService = authService;
             _encryptionService = encryptionService;
+            _signInManager = signInManager;
         }
         [HttpGet]
         public IActionResult Login() 
@@ -46,31 +50,17 @@ namespace JwtCookiesScheme.Controllers
             try
             {
 
-                var loginResult = await _authService.LoginAsync(loginDto);
-                if (loginResult.LoginResult == Result.Fail)
+                var result=await _signInManager.PasswordSignInAsync(loginDto.UserName, loginDto.Password,false,false);
+                if (!result.Succeeded)
                 {
-                    ViewData["Error"] = loginResult.LoginErrorMessage;
+                    ViewData["Error"] = "Please try again";
                     return View(loginDto);
 
                 }
-                if (loginResult.AccessToken == null || loginResult.RefreshToken == null)
+                else
                 {
-                    ViewData["Error"] = loginResult.LoginErrorMessage;
-                    return View(loginDto);
+                    return RedirectToAction("Profile", "User");
                 }
-                HttpContext.Response.Cookies.Append("accessToken",  _encryptionService.EncryptData(loginResult.AccessToken) , new CookieOptions
-                {
-                    HttpOnly = true,
-                    //Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                });
-                HttpContext.Response.Cookies.Append("refreshToken", _encryptionService.EncryptData(loginResult.RefreshToken), new CookieOptions
-                {
-                    HttpOnly = true,
-                    //Secure = true,
-                    SameSite = SameSiteMode.Strict,
-                });
-                return RedirectToAction("Profile", "User");
             }
             catch (Exception ex)
             {

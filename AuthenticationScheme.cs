@@ -2,6 +2,7 @@
 using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Services;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -12,11 +13,14 @@ namespace JwtCookiesScheme
     {
         private readonly AppUserManager _userManager;
         private readonly AppSignInManager _appSignInManager;
+        private readonly IOptionsMonitor<CookieAuthenticationOptions> _cookieOptions;
+
 
         private string accessToken;
         private string refreshToken;
 
         public AuthenticationAppScheme(
+                    IOptionsMonitor<CookieAuthenticationOptions> cookieOptions,
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,
@@ -27,6 +31,7 @@ namespace JwtCookiesScheme
             )
             : base(options, logger, encoder)
         {
+            _cookieOptions = cookieOptions;
             _appSignInManager = appSignInManager;
             _userManager = userManager;
             accessToken = "";
@@ -60,12 +65,15 @@ namespace JwtCookiesScheme
         protected override Task HandleChallengeAsync(AuthenticationProperties properties)
         {
             Response.StatusCode = StatusCodes.Status401Unauthorized;
-            Context.Response.Redirect("/auth/login");
+            var cookieAuthOptions = _cookieOptions.Get(CookieAuthenticationDefaults.AuthenticationScheme);
+            var loginPath = cookieAuthOptions.LoginPath;
+            Context.Response.Redirect(loginPath);
             return Task.CompletedTask;
         }
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
         {
             Response.StatusCode = StatusCodes.Status403Forbidden;
+            Context.Response.Redirect("/auth/register");
             return Task.CompletedTask;
         }
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()

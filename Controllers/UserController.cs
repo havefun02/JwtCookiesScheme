@@ -2,6 +2,7 @@
 using JwtCookiesScheme.Entities;
 using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Services;
+using JwtCookiesScheme.Types;
 using JwtCookiesScheme.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -19,22 +20,37 @@ namespace JwtCookiesScheme.Controllers
             _userService = userService;
             _mapper = mapper;
         }
-        //[Authorize(Policy ="AdminOnly")]
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> Profile()
         {
-            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
-            var userId = userIdClaim?.Value;
-            if (string.IsNullOrWhiteSpace(userId))
+            try
             {
-                return BadRequest("User ID cannot be null or empty.");
-            }
-            ViewData["Title"] = "Profile";
-            var userData =await _userService.GetProfile(userId);
-            var userView = _mapper.Map<UserViewModel>(userData);
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier);
+                var userId = userIdClaim?.Value;
+                var claims = User.Claims;
+                foreach (var claim in claims)
+                {
+                    Console.WriteLine(claim.Type + " " + claim.Value);
+                }
 
-            return View(userView);
+                if (string.IsNullOrWhiteSpace(userId))
+                {
+                    TempData["Alert"] = new ErrorMessageViewModel() {Message= "Some errors occured. Please login again." ,AlertType=AlertType.danger.ToString()};
+                    HttpContext.Response.Cookies.Delete("accessToken");
+                    HttpContext.Response.Cookies.Delete("refreshToken");
+                    return RedirectToAction("Login", "Auth");
+                }
+                ViewData["Title"] = "Profile";
+                var userData = await _userService.GetProfile(userId);
+                var userView = _mapper.Map<UserViewModel>(userData);
+                return View(userView);
+            }
+            catch (Exception ex)
+            {
+                TempData["Alert"] = new ErrorMessageViewModel() { Message = ex.Message, AlertType = AlertType.warning.ToString() };
+                return View();
+            }
         }
 
         [Authorize]

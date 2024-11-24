@@ -35,7 +35,7 @@ namespace JwtCookiesScheme.Services
             _encryptionService = encryptionService;
             _context = context;
         }
-        public override async Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure)
+        public override async Task<SignInResult> PasswordSignInAsync(string userName, string password, bool isPersistent, bool lockoutOnFailure=true)
         {
             try
             {

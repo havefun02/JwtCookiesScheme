@@ -31,12 +31,16 @@
     </style>
 </head>
 <body>
-    @{ 
-    var alert = TempData["Alert"] as JwtCookiesScheme.ViewModels.ErrorMessageViewModel;
-    }
-    @if (alert != null)
-    {
-        @await Html.PartialAsync("_Alert.cshtml", alert)
+    @{
+        if (TempData["Alert"] != null)
+        {
+            var alert = TempData["Alert"];
+            @if (alert != null)
+            {
+                @await Html.PartialAsync("_Alert", alert)
+            }
+            // alert = Newtonsoft.Json.JsonConvert.DeserializeObject<JwtCookiesScheme.ViewModels.ErrorMessageViewModel>(alertJson);
+        }
     }
     <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top px-3 fixed-top">
         <a class="navbar-brand" href="/">Main</a>
@@ -60,6 +64,7 @@
         <div class="login-group">
             @if (Context.User.Identity.IsAuthenticated){
                 <form method="post" asp-action="Logout" asp-controller="User">
+                    <span> Hello, @User.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name")?.Value </span>
                     <button class="nav-link">Log out</button>
                 </form>
             }

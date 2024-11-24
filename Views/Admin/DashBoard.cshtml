@@ -1,0 +1,24 @@
+﻿@model JwtCookiesScheme.ViewModels.DashBoardViewModel
+@{
+}
+<h2>User Dashboard</h2>
+<table class="table">
+    <thead>
+        <tr>
+            <th>User Name</th>
+            <th>Email</th>
+            <th>Full Name</th>
+            <th>Phone Number</th>
+            <th>Role</th>
+
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var user in @Model.users)
+        {
+            @await Html.PartialAsync("_UserItem",user);
+        }
+    </tbody>
+</table>
+<a href="@Url.Action("Create", "User")">Create New User</a>

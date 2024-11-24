@@ -10,7 +10,13 @@ namespace JwtCookiesScheme.Services
     public class UserService : IUserService<User>
     {
         private readonly IRepository<User, DatabaseContext> _repository;
-        public UserService(IRepository<User, DatabaseContext> repository) { _repository = repository; }
+        private readonly AppUserManager _userMananger;
+
+
+        public UserService(IRepository<User, DatabaseContext> repository,AppUserManager userManager) {
+            _repository = repository; 
+            _userMananger = userManager;    
+        }
         public async Task DeleteProfile(string UserId)
         {
             try
@@ -57,15 +63,17 @@ namespace JwtCookiesScheme.Services
         {
             try
             {
-                var context = _repository.GetDbSet();
-                var users = await context.SingleOrDefaultAsync(u => u.Id == UserId);
-                if (users == null) throw new ArgumentNullException($"Can not find {nameof(users)}");
-                return users;
+                var user = await _userMananger.FindByIdAsync(UserId);
+                if (user == null)
+                {
+                    throw new NullReferenceException("Can not find user in database");
+                }
+                return user;
 
             }
-            catch (Exception ex)
+            catch 
             {
-                throw new Exception("Fail to get user data", ex);
+                throw;
             }
         }
 

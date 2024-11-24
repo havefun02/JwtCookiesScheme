@@ -44,6 +44,10 @@ namespace JwtCookiesScheme
             });
             modelBuilder.Entity<UserRole>(entity =>
             {
+
+                entity.HasOne(ur => ur.User).WithMany(u => u.UserRoles).HasForeignKey(u => u.UserId);
+                entity.HasOne(ur => ur.Role).WithMany(u => u.UserRoles).HasForeignKey(u => u.RoleId);
+
             });
             modelBuilder.Entity<RefreshToken>(entity =>
             {

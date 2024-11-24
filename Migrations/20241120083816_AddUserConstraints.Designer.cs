@@ -3,6 +3,7 @@ using System;
 using JwtCookiesScheme;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace JwtCookiesScheme.Migrations
 {
     [DbContext(typeof(DatabaseContext))]
-    partial class DatabaseContextModelSnapshot : ModelSnapshot
+    [Migration("20241120083816_AddUserConstraints")]
+    partial class AddUserConstraints
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -240,9 +243,19 @@ namespace JwtCookiesScheme.Migrations
                     b.Property<string>("RoleId")
                         .HasColumnType("varchar(255)");
 
+                    b.Property<string>("RoleId1")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("UserId1")
+                        .HasColumnType("varchar(255)");
+
                     b.HasKey("UserId", "RoleId");
 
                     b.HasIndex("RoleId");
+
+                    b.HasIndex("RoleId1");
+
+                    b.HasIndex("UserId1");
 
                     b.ToTable("AspNetUserRoles", (string)null);
                 });
@@ -295,21 +308,25 @@ namespace JwtCookiesScheme.Migrations
 
             modelBuilder.Entity("JwtCookiesScheme.Entities.UserRole", b =>
                 {
-                    b.HasOne("JwtCookiesScheme.Entities.Role", "Role")
-                        .WithMany("UserRoles")
+                    b.HasOne("JwtCookiesScheme.Entities.Role", null)
+                        .WithMany()
                         .HasForeignKey("RoleId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("JwtCookiesScheme.Entities.User", "User")
+                    b.HasOne("JwtCookiesScheme.Entities.Role", null)
                         .WithMany("UserRoles")
+                        .HasForeignKey("RoleId1");
+
+                    b.HasOne("JwtCookiesScheme.Entities.User", null)
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.Navigation("Role");
-
-                    b.Navigation("User");
+                    b.HasOne("JwtCookiesScheme.Entities.User", null)
+                        .WithMany("UserRoles")
+                        .HasForeignKey("UserId1");
                 });
 
             modelBuilder.Entity("JwtCookiesScheme.Entities.Role", b =>

@@ -1,9 +1,7 @@
-﻿
-using CRUDFramework;
+﻿using CRUDFramework;
 using JwtCookiesScheme.Entities;
 using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Dtos;
-
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;

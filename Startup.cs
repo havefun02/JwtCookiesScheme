@@ -9,6 +9,7 @@ using JwtCookiesScheme.Interfaces;
 using JwtCookiesScheme.Mapper;
 using JwtCookiesScheme.Policies;
 using JwtCookiesScheme.Services;
+using JwtCookiesScheme.Types;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
@@ -30,7 +31,12 @@ namespace JwtCookiesScheme
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddDbContext<DatabaseContext>();
-            services.AddAppIdentity<User,Role>()
+            services.AddAppIdentity<User, Role>(options =>
+            {
+                options.Lockout.AllowedForNewUsers = true;
+                options.Lockout.MaxFailedAccessAttempts = 5;
+                options.Lockout.MaxFailedAccessAttempts = 2;
+            })
                 .AddEntityFrameworkStores<DatabaseContext>()
                 .AddDefaultTokenProviders();
 
@@ -59,6 +65,8 @@ namespace JwtCookiesScheme
             services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
             services.AddScoped<IUserService<User>, UserService>();
             services.AddScoped<IJwtService, JwtService>();
+            services.AddScoped<IAdminService, AdminService>();
+
             services.AddScoped<IEncryptionService, EncryptionService>();
             services.AddScoped<AppSignInManager>();
             services.AddScoped<AppUserManager>();
@@ -68,8 +76,9 @@ namespace JwtCookiesScheme
 
             services.AddAuthorization(option =>
             {
-                option.AddPolicy("AdminOnly", policy => policy.Requirements.Add(new AdminOnlyRequirement(services.BuildServiceProvider().GetService<RolePermissionsCacheService>())));
-                option.AddPolicy("ExecuteOnly", policy => policy.Requirements.Add(new ExecutePermissionOnly(services.BuildServiceProvider().GetService<RolePermissionsCacheService>())));
+                option.AddPolicy("AdminOnly", policy => policy.RequireRole(RoleEnum.ADMIN.ToString()));
+                //option.AddPolicy("AdminOnly", policy => policy.Requirements.Add(new AdminOnlyRequirement(services.BuildServiceProvider().GetService<RolePermissionsCacheService>())));
+                //option.AddPolicy("ExecuteOnly", policy => policy.Requirements.Add(new ExecutePermissionOnly(services.BuildServiceProvider().GetService<RolePermissionsCacheService>())));
 
             });
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo { Title = "DEVELOPMENT API", Version = "v1" }); });

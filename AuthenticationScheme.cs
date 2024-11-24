@@ -20,7 +20,7 @@ namespace JwtCookiesScheme
         private string refreshToken;
 
         public AuthenticationAppScheme(
-                    IOptionsMonitor<CookieAuthenticationOptions> cookieOptions,
+            IOptionsMonitor<CookieAuthenticationOptions> cookieOptions,
             IOptionsMonitor<AuthenticationSchemeOptions> options,
             ILoggerFactory logger,
             UrlEncoder encoder,

@@ -9,14 +9,8 @@
             <h3>User Details</h3>
             <p><strong>Username:</strong> @user.UserName</p>
             <p><strong>Email:</strong> @user.UserEmail</p>
-            <p><strong>Role:</strong> @user.UserRole</p>
-            <h4>Permissions:</h4>
-            <ul>
-                @foreach (var permission in user.UserPermissions)
-                {
-                    <li>@permission</li>
-                }
-            </ul>
+            <p><strong>Phone Number:</strong> @user.UserPhone</p>
+            
         </div>
     }
 </div>

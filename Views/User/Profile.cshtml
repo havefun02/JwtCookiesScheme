@@ -8,13 +8,6 @@
         <h3>User Details</h3>
         <p><strong>Username:</strong> @Model.UserName</p>
         <p><strong>Email:</strong> @Model.UserEmail</p>
-        <p><strong>Role:</strong> @Model.UserRole</p>
-        <h4>Permissions:</h4>
-        <ul>
-            @foreach (var permission in Model.UserPermissions)
-            {
-                <li>@permission</li>
-            }
-        </ul>
+        <p><strong>Phone Number:</strong> @Model.UserPhone</p>
     </div>
 </div>

@@ -28,6 +28,10 @@ namespace JwtCookiesScheme.Controllers
         {
             return View();
         }
+        public IActionResult Forbidden()
+        {
+            return PartialView("~/Views/Shared/_Forbidden.cshtml");
+        }
         [HttpGet]
         public IActionResult Register()
         {
@@ -51,10 +55,13 @@ namespace JwtCookiesScheme.Controllers
             try
             {
 
-                var result=await _signInManager.PasswordSignInAsync(loginDto.UserName, loginDto.Password,false,false);
+                var result=await _signInManager.PasswordSignInAsync(loginDto.UserName, loginDto.Password,false,true);
                 if (!result.Succeeded)
                 {
-                    TempData["Alert"] = new ErrorMessageViewModel() { Message = "Please try again", AlertType = AlertType.info.ToString() };
+                    if (result.IsLockedOut)
+                        TempData["Alert"] = new ErrorMessageViewModel() { Message = "Your are locked out, please try after 5 minutes", AlertType = AlertType.info.ToString() };
+                    else
+                        TempData["Alert"] = new ErrorMessageViewModel() { Message = "Please try again", AlertType = AlertType.info.ToString() };
                     return View(loginDto);
 
                 }

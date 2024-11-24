@@ -39,9 +39,9 @@ public static class IdentityServiceCollectionExtensions
      options => { }).AddCookie(options =>
      {
          options.LoginPath = "/auth/Login";
-         options.AccessDeniedPath = "/Account/AccessDenied";
-         options.SlidingExpiration = true;
-         options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+         options.AccessDeniedPath = "/auth/forbidden";
+         //options.SlidingExpiration = true;
+         //options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
      });
  //.AddCookie("JWT-COOKIES-SCHEME", options =>
  //    {

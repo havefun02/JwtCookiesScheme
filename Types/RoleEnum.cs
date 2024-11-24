@@ -4,7 +4,7 @@
     {
         ADMIN,
         USER,
-        GUEST
+        GUEST,OWNER
     }
 
 }

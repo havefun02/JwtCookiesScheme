@@ -1,0 +1,43 @@
+﻿@model JwtCookiesScheme.Dtos.EditRequest
+
+<h2>Edit User</h2>
+
+<partial name="_Validation" />
+<form asp-action="Edit" method="post" asp-controller="Admin">
+
+    <div class="form-group">
+        <label asp-for="UserEmail" class="control-label"></label>
+        <input readonly asp-for="UserEmail" class="form-control" value="@Model.UserEmail" />
+        <span asp-validation-for="UserEmail" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserFirstName" class="control-label"></label>
+        <input asp-for="UserFirstName" class="form-control" />
+        <span asp-validation-for="UserFirstName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserLastName" class="control-label"></label>
+        <input asp-for="UserLastName" class="form-control" />
+        <span asp-validation-for="UserLastName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserPhone" class="control-label"></label>
+        <input asp-for="UserPhone" class="form-control" />
+        <span asp-validation-for="UserPhone" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserRoles" class="control-label">Choose an option</label>
+        <select asp-for="UserRoles" class="form-control form-select" asp-items="@Model.RoleList">
+        </select>
+        <span asp-validation-for="UserRoles" class="text-danger"></span>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary">Save Changes</button>
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+</form>

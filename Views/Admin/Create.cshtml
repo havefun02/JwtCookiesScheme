@@ -1,0 +1,59 @@
+﻿@model JwtCookiesScheme.Dtos.RegisterRequest
+
+<h2>Create New User</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="UserName" class="control-label"></label>
+        <input asp-for="UserName" class="form-control" />
+        <span asp-validation-for="UserName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserEmail" class="control-label"></label>
+        <input asp-for="UserEmail" class="form-control" />
+        <span asp-validation-for="UserEmail" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserPassword" class="control-label"></label>
+        <input asp-for="UserPassword" type="password" class="form-control" />
+        <span asp-validation-for="UserPassword" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="ConfirmPassword" class="control-label"></label>
+        <input asp-for="ConfirmPassword" type="password" class="form-control" />
+        <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserFirstName" class="control-label"></label>
+        <input asp-for="UserFirstName" class="form-control" />
+        <span asp-validation-for="UserFirstName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserLastName" class="control-label"></label>
+        <input asp-for="UserLastName" class="form-control" />
+        <span asp-validation-for="UserLastName" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserPhone" class="control-label"></label>
+        <input asp-for="UserPhone" class="form-control" />
+        <span asp-validation-for="UserPhone" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label asp-for="UserRole" class="control-label"></label>
+        <select asp-for="UserRole" class="form-control">
+            <option value="GUEST">Guest</option>
+            <option value="USER">User</option>
+            <option value="ADMIN">Admin</option>
+        </select>
+        <span asp-validation-for="UserRole" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Create</button>
+</form>
